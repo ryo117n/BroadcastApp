@@ -1,4 +1,4 @@
 class Post < ApplicationRecord
   belongs_to :user
-  # validates :content, length: { maximum: 140 }, presence :true
+  validates :content, {presence: true, length: {maximum: 50}}
 end
