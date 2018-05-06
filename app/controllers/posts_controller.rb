@@ -4,12 +4,13 @@ class PostsController < ApplicationController
   # GET /posts
   # GET /posts.json
   def index
-    @posts = Post.all
+    @posts = Post.all.order(created_at: :desc)
   end
 
   # GET /posts/1
   # GET /posts/1.json
   def show
+    @post = Post.find_by(id: params[:id])
   end
 
   # GET /posts/new
@@ -24,41 +25,39 @@ class PostsController < ApplicationController
   # POST /posts
   # POST /posts.json
   def create
-    @post = Post.new(post_params)
-
-    respond_to do |format|
-      if @post.save
-        format.html { redirect_to @post, notice: 'Post was successfully created.' }
-        format.json { render :show, status: :created, location: @post }
-      else
-        format.html { render :new }
-        format.json { render json: @post.errors, status: :unprocessable_entity }
-      end
+    # 応急処置↓↓
+    @user = User.find(1)
+    # devise入れたらcurrent_user使える
+    # @user = current_user
+    @post = @user.posts.build(post_params)
+    if @post.save
+      flash[:notice] = "投稿が完了しました"
+      redirect_to posts_path
+    else
+      render("posts/new")
     end
   end
 
   # PATCH/PUT /posts/1
   # PATCH/PUT /posts/1.json
   def update
-    respond_to do |format|
-      if @post.update(post_params)
-        format.html { redirect_to @post, notice: 'Post was successfully updated.' }
-        format.json { render :show, status: :ok, location: @post }
-      else
-        format.html { render :edit }
-        format.json { render json: @post.errors, status: :unprocessable_entity }
-      end
+    @post = Post.find(params[:id])
+    @post.update(post_params)
+    if @post.save
+      flash[:notice] = "投稿を編集しました"
+      redirect_to post_path
+    else
+      render("posts/edit")
     end
   end
 
   # DELETE /posts/1
   # DELETE /posts/1.json
   def destroy
+    @post = Post.find_by(id: params[:id])
     @post.destroy
-    respond_to do |format|
-      format.html { redirect_to posts_url, notice: 'Post was successfully destroyed.' }
-      format.json { head :no_content }
-    end
+    flash[:notice] = "投稿を削除しました"
+    redirect_to posts_path
   end
 
   private
